@@ -1,14 +1,22 @@
-#!/bin/bash
+#!/usr/bin/env bash
+JAVA_DIR=/Library/Java/JavaVirtualMachines
+versions=()
+declare -A homes
 
-homes=(['8']='/Library/Java/JavaVirtualMachines/jdk1.8.0_151.jdk/Contents/Home' ['9']='/Library/Java/JavaVirtualMachines/jdk-9.jdk/Contents/Home')
+for file in `ls $JAVA_DIR`
+do
+    version=`$JAVA_DIR/$file/Contents/Home/bin/java -version 2>&1 | head -n 1 2>&1 | awk '{print $3}' | sed 's/\"//g'`
+    homes[$version]="$JAVA_DIR/$file/Contents/Home"
+    versions+=($version)
+done
 
 if [ ! $1 ]; then
     echo "Java version switch tools"
     echo ""
     echo "usage: eval \$(jvs [version])"
-    echo "version: 8, 9"
+    echo "version: ${versions[*]}"
     echo ""
-    echo "etc: eval \$(jvs 9)"
+    echo "etc: eval \$(jvs 8)"
     exit
 fi
 
@@ -32,4 +40,4 @@ PATH=$JAVA_HOME/bin:$PATH
 echo "export JAVA_HOME=$JAVA_HOME"
 echo "export CLASSPATH=$CLASSPATH"
 echo "export PATH=$PATH"
-echo "export java_version=$(java -version 2>&1 | head -n 1 2>&1 | awk '{print $3}' | sed 's/\"//g')"
+echo "export java_version=$1"
