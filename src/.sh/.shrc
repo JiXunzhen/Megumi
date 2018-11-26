@@ -1,0 +1,61 @@
+#!/bin/zsh
+export LS_OPTIONS='--color=auto' # 如果没有指定，则自动选择颜色
+export CLICOLOR='Yes' #是否输出颜色
+export LSCOLORS='CxfxcxdxbxegedabagGxGx' #指定颜色
+
+COMPOSERPATH=/Users/jixunzhen/.composer/vendor/bin
+
+LC_ALL=en_US.UTF-8
+LANG=en_US.UTF-8
+
+STDOUT=1
+STDIN=0
+STDERR=2
+
+LD_LIBRARY_PATH=/usr/local/lib
+
+GOPATH=/Users/jixunzhen/go
+GOROOT=/usr/local/opt/go/libexec
+
+PATH=~/Library/Python/2.7/bin:$PATH # user python bin
+PATH=$COMPOSERPATH:$PATH            # composer
+PATH=$GOPATH/bin:$PATH              # go
+PATH=/usr/local/sbin:$PATH          # local/sbin
+PATH=/usr/local/bin:$PATH           # local/bin
+PATH=~/.bin:$PATH                   # myself bin
+PATH=~/Documents/develop/installs/bin:$PATH                   # myself bin
+
+export GOPATH
+export GOROOT
+export PATH
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+export PATH=/usr/local/opt/llvm/bin:$PATH
+
+export LC_ALL
+export LANG
+
+export STDIN
+export STDOUT
+export STDERR
+
+export HOMEBREW_GITHUB_API_TOKEN="7e572a8eeecff5e834e409983237c138e6cb3469"
+
+# nvm
+#source $(brew --prefix nvm)/nvm.sh
+
+# java
+eval $(jvs 8)
+
+#clear
+
+#echo "
+#├┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┬┤
+#├  ++++++   是时候表演真正的技术了!   ++++++ ┤
+#├┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┤
+#├  ++++++  I have no time for games.  ++++++ ┤
+#├┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┤
+#" | lolcat -s $RANDOM;
+
+#fortune | cowsay
+
+clear

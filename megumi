@@ -1,0 +1,68 @@
+#!/bin/bash
+
+DEST='./src'
+MYLOVE='./mylove.ini'
+ENCRYPT='./encrypt.ini'
+NOCOPY='#NoMegumi'
+
+RSA_KEY="./key.pub"
+
+function validate() {
+    if [[ ! $1 ]]; then
+        return 1
+    elif [[ ! -f $1 && ! -d $1 ]]; then
+        echo -e "$1: no such directory!"
+        return 2
+    fi
+    return 0
+}
+
+function ignore() {
+    if [[ -d $1 ]]; then
+        for file in `ls -a $1`
+        do
+            if [[ ! $file == '.' && ! $file == '..' ]];then
+                ignore $1/$file
+            fi
+        done
+    elif grep "$NOCOPY" $1 > /dev/null; then
+        echo "ignore for $1..."
+        if [[ `uname` == 'Darwin' ]];then
+            sed -i "" "/$NOCOPY/d" $1
+        else
+            sed -i "/$NOCOPY/d" $1
+        fi
+    fi
+}
+
+echo -e "\n======================= COPY ==========================="
+
+while read LINE
+do
+    validate $LINE
+    if [[ $? == 0 ]]; then
+        echo -e "start to cp $LINE..."
+        cp -r $LINE $DEST
+    fi
+done < $MYLOVE
+
+echo -e "\n======================= ENCRYPT ========================"
+
+while read LINE
+do
+    validate $LINE
+    if [[ $? == 0 ]]; then
+        echo -e "start to encrypt $LINE..."
+        ./secure encrypt $RSA_KEY -s $LINE -d $LINE
+    fi
+done < $ENCRYPT
+
+echo -e "\n======================= IGNORE ========================="
+
+ignore $DEST
+
+echo -e "\n======================= ACK ============================"
+
+ack $NOCOPY -r $DEST
+
+echo -e "complete!"

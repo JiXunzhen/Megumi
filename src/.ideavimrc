@@ -1,0 +1,40 @@
+"******************** config ***********************
+let mapleader='\'
+
+inoremap jk <esc>
+inoremap Jk <esc>
+inoremap JK <esc>
+
+inoremap <C-h> <left>
+inoremap <C-j> <down>
+inoremap <C-k> <up>
+inoremap <C-l> <right>
+
+nmap ; :
+
+nnoremap <space> /
+
+noremap y "+y
+" 原先 k
+noremap p "+p
+
+
+" 原先 进入Ex模式
+map <S-q> :q!<CR>
+" 原先 w
+map <S-w> :w<CR>
+
+" findf
+map <leader>f :action GotoFile<CR>
+
+" findg
+map <leader>g :action FindInPath<CR>
+
+" comment
+map <C-/> :action CommentByLineComment<CR>
+
+nmap <S-tab> :action PreviousTab<CR>
+nmap <tab> :action NextTab<CR>
+nmap <C-h> :action Back<CR>
+nmap <C-l> :action Forward<CR>
+nmap <leader>d :action GotoDeclaration<CR>

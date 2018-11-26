@@ -1,0 +1,133 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import os
+import argparse
+from termcolor import colored
+
+# run bash
+run_cmds = """
+set -e
+# export envs
+export{ENV}
+echo "export env:{ENV}\n"
+mkdir -p build
+cd build
+cmake ..
+cd ..
+cmake --build build --target $TARGET -- -j
+echo "================== build complete =================="
+build/$TARGET
+echo ""
+"""
+
+rest_run_cmds = """
+set -e
+export{ENV}
+mkdir -p build
+cd build
+cmake .. > /dev/null
+cd ..
+cmake --build build --target $TARGET -- -j > /dev/null
+build/$TARGET
+"""
+
+REQUIRED_ENVS = ['TARGET']
+
+parser = argparse.ArgumentParser(description="""
+run cmake project in current path. supported by Gayson.
+Usage:
+cmake_run --source a.c --target a
+cmake_run --source (a.c b.c g.h) --target b
+cmake_run --source foo.c --env=key1=value1 --env=key2=value2 // target is foo
+""", formatter_class=argparse.RawDescriptionHelpFormatter)
+
+parser.add_argument(
+    '-s', '--source', help="specific the main file, equals but have higher priority to '-e SOURCE=param'", type=str)
+parser.add_argument(
+    '-t', '--target', help="specific the make target, equals but have higher priority to '-e TARGET=param'", type=str)
+parser.add_argument('-e', '--env', action='append',
+                    help="specific the env to cmake")
+parser.add_argument('--no-color', help="output without color.", dest='colorful_flag', action='store_false')
+parser.add_argument('--output-less', help="no info output.", dest='output_less_flag', action='store_false')
+
+
+class ColorfulFlag(object):
+    flag = True
+
+
+class OutputLessFlag(object):
+    flag = True
+
+
+class RunCommand(object):
+    cmd = run_cmds
+
+
+def info(msg):
+    if OutputLessFlag.flag:
+        if ColorfulFlag.flag:
+            print(colored("[INFO] {}".format(msg), 'green'))
+        else:
+            print("[INFO] {}".format(msg))
+
+
+def warning(msg):
+    if ColorfulFlag.flag:
+        print(colored("[WARN] {}".format(msg), 'yellow'))
+    else:
+        print("[WARN] {}".format(msg))
+
+
+def error(msg):
+    if ColorfulFlag.flag:
+        print(colored("[ERROR] {}".format(msg), 'red'))
+    else:
+        print("[ERROR] {}".format(msg))
+    exit(1)
+
+
+def parse_env(args):
+    info("start parse env...")
+    env_list = {}
+    if args.env:
+        for item in args.env:
+            pair = str(item).split('=')
+            if len(pair) != 2:
+                warning("ignored invalid env param: {}".format(pair))
+                continue
+            key, value = pair
+            env_list[key] = value
+    if args.source:
+        env_list['SOURCE'] = args.source
+        env_list['TARGET'] = os.path.splitext(args.source)[0]
+    if args.target:
+        env_list['TARGET'] = args.target
+
+    not_includes = [required_key for required_key in REQUIRED_ENVS if required_key not in env_list.keys()]
+    if not_includes:
+        error("required keys not found: {}".format(not_includes))
+    info("complete parse env.")
+    return env_list
+
+
+def handle(args):
+    ColorfulFlag.flag = args.colorful_flag
+    OutputLessFlag.flag = args.output_less_flag
+    if not args.output_less_flag:
+        RunCommand.cmd = rest_run_cmds
+
+    env_list = parse_env(args)
+    param_env = reduce(
+        (lambda o, key: o + " {}={}".format(key, env_list[key])), env_list, "")
+    info("start run...")
+    result_code = os.system(RunCommand.cmd.format(ENV=param_env))
+    if result_code == 0:
+        info("complete run.")
+    else:
+        error("run fail.")
+
+
+if __name__ == "__main__":
+    args = parser.parse_args()
+    handle(args)

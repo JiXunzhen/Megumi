@@ -1,0 +1,92 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import rsa
+import argparse
+import os
+
+ENCRYPT_LEN = 200
+DECRYPT_LEN = 256
+
+parser = argparse.ArgumentParser(description="""
+加密解密工具. supported by Gayson.
+Usage:
+secure gen rsa_file
+secure encrypt rsa_file -s [SOURCE FILE] -d [DEST FILE]
+secure decrypt rsa_file -s [SOURCE FILE] -d [DEST FILE]
+""", formatter_class=argparse.RawDescriptionHelpFormatter)
+
+parser.add_argument(
+    'behavior', help="specific the hehavior, options: gen, encrypt, decrypt")
+parser.add_argument(
+    'rsa', help="specific the rsa file")
+parser.add_argument('-s', '--source', help="specific the source file")
+parser.add_argument('-d', '--dest', help="specific the dest file")
+
+
+def validate_args(args):
+    return os.path.isfile(args.rsa) and os.path.isfile(args.source)
+
+
+def gen(args):
+    (pub_key, priv_key) = rsa.newkeys(2048)
+
+    with open(args.rsa + ".pub", 'w') as f:
+        f.write(pub_key.save_pkcs1().decode())
+
+    with open(args.rsa + ".priv", 'w') as f:
+        f.write(priv_key.save_pkcs1().decode())
+
+
+def encrypt(args):
+    if not validate_args(args):
+        print "[ERROR] invalid args, rsa_file: {}, source: {}".format(
+            args.rsa, args.source)
+
+    with open(args.rsa, 'r') as f:
+        pub_key = rsa.PublicKey.load_pkcs1(f.read().encode())
+
+    with open(args.source, 'r') as f:
+        source = f.read()
+
+    res = ''
+    for i in xrange(0, len(source), ENCRYPT_LEN):
+        res += rsa.encrypt(source[i:i + ENCRYPT_LEN], pub_key)
+
+    with open(args.dest, 'w') as f:
+        f.write(res)
+
+
+def decrypt(args):
+    if not validate_args(args):
+        print "[ERROR] invalid args, rsa_file: {}, source: {}".format(
+            args.rsa, args.source)
+
+    with open(args.rsa, 'r') as f:
+        priv_key = rsa.PrivateKey.load_pkcs1(f.read().encode())
+
+    with open(args.source, 'r') as f:
+        source = f.read()
+
+    res = ''
+    for i in xrange(0, len(source), DECRYPT_LEN):
+        res += rsa.decrypt(source[i:i + DECRYPT_LEN], priv_key)
+
+    with open(args.dest, 'w') as f:
+        f.write(res)
+
+
+ACTION_MAPS = {
+    "gen": gen,
+    "encrypt": encrypt,
+    "decrypt": decrypt,
+}
+
+if __name__ == "__main__":
+    args = parser.parse_args()
+
+    if args.behavior in ACTION_MAPS.keys():
+        ACTION_MAPS[args.behavior](args)
+    else:
+        print "[WARNING] behavior {} not in {}".format(
+            args.behavior, ACTION_MAPS.keys())

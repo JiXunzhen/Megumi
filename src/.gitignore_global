@@ -1,0 +1,14 @@
+.envrc
+*.nogit*
+*_nogit*
+*.nogit_dir
+*.zip
+.venv
+.vscode
+.pytest_cache
+dump.rdb
+
+appspec.yml
+eless_env.yaml
+env.yaml
+bin
