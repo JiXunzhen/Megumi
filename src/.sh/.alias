@@ -39,3 +39,5 @@ alias kcuc='kubectl config use-context'
 
 # python
 alias spv='source .venv/bin/activate'
+
+alias essh='ssh -p 2018'

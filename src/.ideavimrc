@@ -14,9 +14,9 @@ nmap ; :
 
 nnoremap <space> /
 
-noremap y "+y
+vnoremap y "+y
 " 原先 k
-noremap p "+p
+noremap <C-p> "+p
 
 
 " 原先 进入Ex模式
