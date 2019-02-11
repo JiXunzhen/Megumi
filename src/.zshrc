@@ -88,6 +88,7 @@ setopt auto_cd
 cdpath=(
     $HOME/Documents/eleme/Alaya/src/eleme/services
     $HOME/Documents/eleme 
+    $HOME/Documents/develop
     $HOME/Documents
     $HOME/go/src/github.com/JiXunzhen/go_ws
 )
@@ -122,7 +123,6 @@ cdpath=(
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 source ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.plugin.zsh
 
-
 #source profile
 
 # direnv
@@ -131,12 +131,16 @@ eval "$(direnv hook zsh)"
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
 # my config
-source ~/.sh/.shrc
-source ~/.sh/.alias
-source ~/.sh/.prompt
+#source ~/.sh/shrc
+#source ~/.sh/alias
+#source ~/.sh/prompt
+
+for f in ~/.sh/*; do source $f; done
 
 # The next line updates PATH for the Google Cloud SDK.
 if [ -f '/Users/jixunzhen/Documents/github/kubernetes/google-cloud-sdk/path.zsh.inc' ]; then source '/Users/jixunzhen/Documents/github/kubernetes/google-cloud-sdk/path.zsh.inc'; fi
 
 # The next line enables shell command completion for gcloud.
 if [ -f '/Users/jixunzhen/Documents/github/kubernetes/google-cloud-sdk/completion.zsh.inc' ]; then source '/Users/jixunzhen/Documents/github/kubernetes/google-cloud-sdk/completion.zsh.inc'; fi
+
+source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh 

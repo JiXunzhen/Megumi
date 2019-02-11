@@ -44,7 +44,7 @@ export HOMEBREW_GITHUB_API_TOKEN="7e572a8eeecff5e834e409983237c138e6cb3469"
 #source $(brew --prefix nvm)/nvm.sh
 
 # java
-eval $(jvs 8)
+eval $(jvs 1.8.0_151)
 
 #clear
 

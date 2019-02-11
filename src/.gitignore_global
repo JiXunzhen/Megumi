@@ -12,3 +12,6 @@ appspec.yml
 eless_env.yaml
 env.yaml
 bin
+target
+.DS_Store
+.idea
