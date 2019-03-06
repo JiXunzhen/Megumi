@@ -57,8 +57,8 @@ Plug 'Valloric/YouCompleteMe'
 Plug 'w0rp/ale'
 
 " 基于语言的语法补全
-Plug 'honza/vim-snippets'
-Plug 'SirVer/ultisnips'
+"Plug 'honza/vim-snippets'
+"Plug 'SirVer/ultisnips'
 
 " 目录结构
 Plug 'scrooloose/nerdtree', { 'on': 'NERDTreeToggle' }
@@ -73,8 +73,8 @@ Plug 'Raimondi/delimitMate'
 Plug 'easymotion/vim-easymotion'
 
 " airline
-"Plug 'vim-airline/vim-airline'
-"Plug 'vim-airline/vim-airline-themes'
+Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
 
 " vim主题
 Plug 'flazz/vim-colorschemes'
@@ -231,10 +231,6 @@ let g:ycm_always_populate_location_list = 1
 " 设置goto打开新buffer
 let g:ycm_goto_buffer_command = 'new-or-existing-tab'
 
-"******************************配置airline******************************
-nmap <S-tab> :tabp<CR>
-nmap <tab> :tabn<CR>
-
 "******************************配置UltiSnips******************************
 let g:UltiSnipsExpandTrigger = "<tab>"
 let g:UltiSnipsJumpForwardTrigger = "<C-c>"
@@ -253,6 +249,10 @@ let g:mta_use_matchparen_group = 0
 
 "******************************配置WinManager******************************
 "let g:winManagerWindowLayout='NERDTree|TagList'
+"
+"******************************配置airline******************************
+nmap <s-tab> :tabp<cr>
+nmap <tab> :tabn<cr>
 "let g:NERDTree_title = "[NERDTree]"
 
 "let NERDTreeIgnore = ['\.pyc', '\~$', '\.swp', '\.lo']
@@ -437,10 +437,10 @@ nmap <C-h> <C-w>h
 " 原先 无
 nmap <C-l> <C-w>l
 " 原先 <S-z-z> 等于:wq
+"
 nmap <S-z> <C-W>o<S-q>
 
 nmap <leader>d :YcmCompleter GoToDefinitionElseDeclaration<CR>
-nmap <leader>b <C-o>
 " C-/ equal C-_ in vim
 map <C-_> <leader>c<space>
 

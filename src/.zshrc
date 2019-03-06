@@ -61,7 +61,7 @@ plugins=(
   git
   #z
   extract
-  #docker
+  docker
   #go
   #mvn
   #redis-cli
