@@ -38,3 +38,4 @@ nmap <tab> :action NextTab<CR>
 nmap <C-h> :action Back<CR>
 nmap <C-l> :action Forward<CR>
 nmap <leader>d :action GotoDeclaration<CR>
+map <C-s> :action SearchEverywhere<CR>

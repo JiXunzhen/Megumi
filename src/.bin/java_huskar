@@ -1,0 +1,172 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import argparse
+import os
+import yaml
+import time
+import requests
+import json
+import re
+
+parser = argparse.ArgumentParser(description="""
+构建本地java测试环境，可注册至huskar. supported by Gayson.
+
+说明:
+1. java_huskar init时，若config/eleme.yml文件不存在，则会在当前目录下创建。
+2. eleme.yml规则见 https://starter.elenet.me/eleme-config/#elemeyml
+
+Usage:
+java_huskar init
+java_huskar --ezone=[ENV] --cluster=[CLUSTER] run
+java_huskar clear
+""", formatter_class=argparse.RawDescriptionHelpFormatter)
+
+sub_parsers = parser.add_subparsers(help='sub-command help')
+
+parser_init = sub_parsers.add_parser('init', help='本地运行环境初始化')
+parser_run = sub_parsers.add_parser('run', help='启动本地运行环境')
+parser_clean = sub_parsers.add_parser('clean', help='清空本地运行环境')
+
+parser_run.add_argument('-ez', '--ezone', help='ezone，默认使用config/eleme.yml中的配置')
+parser_run.add_argument('-c', '--cluster', help='集群，默认使用config/eleme.yml中的配置')
+
+
+rfc1738_pattern = re.compile(r'''
+    (?P<name>[\w\+]+)://
+    (?:
+        (?P<username>[^:/]*)
+        (?::(?P<password>.*))?
+    @)?
+    (?:
+        (?:
+            \[(?P<ipv6host>[^/]+)\] |
+            (?P<ipv4host>[^/:]+)
+        )?
+        (?::(?P<port>[^/]*))?
+    )?
+    (?:/(?P<path>.*))?
+    ''', re.X)
+
+
+def validate_project():
+    return os.path.isfile('./app.yaml') or os.path.isfile('./pom.xml')
+
+
+def validate_java_running_env():
+    return os.path.isfile('./config/eleme.yml')
+
+
+def exec_clean(args):
+    print "[INFO] start clean..."
+    print "[INFO] kill goproxy ..."
+    os.system("lsof -nP -i4TCP:12345 | grep LISTEN | awk '{print $2}' | xargs kill")
+    print "[INFO] clean over."
+
+
+def exec_init(args):
+    print('[INFO] start init...')
+    if not validate_project():
+        print "[ERROR] no avail dir: have no pom.xml or app.yaml"
+
+    INIT_FILE_MAP = {'config': ['eleme.yml']}
+
+    for directory, files in INIT_FILE_MAP.items():
+        os.system('mkdir -p {}'.format(directory))
+        for f in files:
+            cmd = 'touch {}/{}'.format(directory, f)
+            os.system(cmd)
+            print cmd
+    print('[INFO] init over.')
+
+
+def exec_run(args):
+    print("[INFO] start run...")
+    if not validate_java_running_env():
+        print("[ERROR] env file or directory does not exist, init first")
+        return
+
+    print("[INFO] start process config files...")
+    config = {}
+    with open('config/eleme.yml', 'r') as f:
+        config = yaml.load(f.read())
+
+    def get_env_config(args):
+        EZONE_CONFIGS = {'alpha': ['vpc', 'orig'], 'alta1': ['alta', 'orig'], 'altb1': ['altb', 'prefix'], 'altc1': ['altc', 'prefix']}
+        res = {}
+        if args.ezone:
+            if args.ezone in EZONE_CONFIGS.keys():
+                res['ezone'] = args.ezone
+                ezone_configs = EZONE_CONFIGS.get(args.ezone)
+                res['idc'], res['soa_mode'] = ezone_configs[0], ezone_configs[1]
+            else:
+                print("[WARN] invalid ezone: {}".format(args.ezone))
+        if args.cluster:
+            res['cluster'] = args.cluster
+        return res
+
+    config.get('ele').get('env').update(get_env_config(args))
+
+    with open('config/eleme.yml', 'w') as f:
+        yaml.dump(config, f, default_flow_style=False)
+
+    print("[INFO] start run sam...")
+
+    app_id = config.get('ele').get('appId')
+    ezone = config.get('ele').get('env').get('ezone')
+
+    os.system("lsof -nP -i4TCP:12345 | grep LISTEN | awk '{print $2}' | xargs kill")
+    os.system("curl -sSL https://ele.to/5siOfM | python - -i {} -d".format(
+        config.get("ele").get('env').get('idc'),
+    ))
+    while os.system("curl http://localhost:12345 2>/dev/null"):
+        time.sleep(1)
+    os.system("curl -X POST http://localhost:12345/application/{}".format(app_id))
+    print('\n')
+
+    huskar_url = config.get('ele').get('huskar').get('url')
+    huskar_token = config.get('ele').get('huskar').get('token')
+    infra_settings = config.get('ele').get('resources')
+
+    print("[INFO] check huskar api...")
+    resp = requests.get('http://{URL}/api/application/{APPID}'.format(URL=huskar_url, APPID=app_id), headers={'Authorization': huskar_token})
+    if resp.status_code != 200:
+        print("[ERROR] cannot access huskar url:{}, err: {}".format(resp.url, resp.content))
+        return
+
+    print("[INFO] start registry...")
+    for infra_type, infra_config in infra_settings.items():
+        if not infra_config.get('enabled'):
+            continue
+        for name in infra_config.get('id').split(' '):
+            if not name:
+                continue
+            resp = requests.get('http://{URL}/api/infra-config/{APPID}/{TYPE}/{NAME}'.format(URL=huskar_url, APPID=app_id, TYPE=infra_type, NAME=name), headers={'Authorization': huskar_token})
+            res = json.loads(resp.content)
+            for ezone_infra_configs in res.get('data').get('infra_config'):
+                ez = ezone_infra_configs.get('scope_name')
+                if ez == ezone:
+                    for key, val in ezone_infra_configs.get('value').items():
+                        if key in ['master', 'slave', 'url']:
+                            m = rfc1738_pattern.match(val)
+                            if m is None:
+                                print('Cannot parse RFC 1738 URL: {!r}'.format(val))
+                                return
+                            url_config = m.groupdict()
+                            host = url_config.get('ipv4host')
+                            cluster, _, _ = url_config.get('path', '').partition('/')
+
+                            os.system('curl -X PUT localhost:12345/registry/{}/{}'.format(host, cluster))
+                            print('')
+
+    print("[INFO] env config over.")
+
+
+parser_init.set_defaults(func=exec_init)
+parser_clean.set_defaults(func=exec_clean)
+parser_run.set_defaults(func=exec_run)
+
+
+if __name__ == "__main__":
+    args = parser.parse_args()
+    args.func(args)
