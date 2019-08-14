@@ -24,6 +24,7 @@ PATH=/usr/local/sbin:$PATH          # local/sbin
 PATH=/usr/local/bin:$PATH           # local/bin
 PATH=~/.bin:$PATH                   # myself bin
 PATH=~/Documents/develop/installs/bin:$PATH                   # myself bin
+PATH=~/Documents/develop/installs/odpscmd_public/bin:$PATH                   # odpscmd
 
 export GOPATH
 export GOROOT
