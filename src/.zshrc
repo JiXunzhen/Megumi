@@ -57,7 +57,7 @@ ZSH_THEME="ys"
  
 # plugins
 plugins=(
-  zsh-syntax-highlighting
+  #zsh-syntax-highlighting
   git
   #z
   extract
@@ -86,8 +86,6 @@ source $ZSH/oh-my-zsh.sh
 
 setopt auto_cd
 cdpath=(
-    $HOME/Documents/eleme/Alaya/src/eleme/services
-    $HOME/Documents/eleme 
     $HOME/Documents/develop
     $HOME/Documents
     $HOME/go/src/github.com/JiXunzhen/go_ws
@@ -121,7 +119,6 @@ cdpath=(
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
-source ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.plugin.zsh
 
 #source profile
 
@@ -143,4 +140,3 @@ if [ -f '/Users/jixunzhen/Documents/github/kubernetes/google-cloud-sdk/path.zsh.
 # The next line enables shell command completion for gcloud.
 if [ -f '/Users/jixunzhen/Documents/github/kubernetes/google-cloud-sdk/completion.zsh.inc' ]; then source '/Users/jixunzhen/Documents/github/kubernetes/google-cloud-sdk/completion.zsh.inc'; fi
 
-source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh 
